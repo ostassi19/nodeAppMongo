@@ -1,4 +1,5 @@
 const asyncHandler= require('express-async-handler')
+const faker = require('@faker-js/faker')
 
 const Goal = require('../models/goalModel')
 const User = require('../models/userModel')
@@ -7,8 +8,13 @@ const User = require('../models/userModel')
 // @route GET /api/goals
 // @access Private
 const getGoals=asyncHandler( async (req, res) => {
+    const page = req.query.page
+    const limit = req.query.limit
+    const startIndex= (page-1)*limit
+    endIndex= page*limit
     const goals = await Goal.find({user:req.user.id})
-    res.status(200).json(goals)
+    paginatedGoals= goals.slice(startIndex,endIndex)
+    res.status(200).json(paginatedGoals)
 })
 
 // @desc create goals
@@ -26,6 +32,46 @@ const setGoals=asyncHandler( async (req, res) => {
 
     res.status(200).json(goal)
 })
+
+
+// @desc create fake golas
+// @route POST /api/goals/fake
+// @access Private
+const createFakeGoals=asyncHandler( async (req, res) => {
+    for (var i=0;i<10;i++){
+        var fakeGoals= new Goal({
+            text: faker.Lorem.paragraph(),
+            user: req.user.id
+        })
+        fakeGoals.save((err,data)=>{
+            if (err){
+                console.log(err)
+            }
+        })
+    }
+    res.status(200).json(fakeGoals)
+})
+
+
+// @desc create massive golas
+// @route POST /api/goals/massive
+// @access Private
+const createMassiveGoals=asyncHandler( async (req, res) => {
+    for (var i=0;i<500;i++){
+        var massiveGoals= new Goal({
+            text: 'I love you Aloulou',
+            user: req.user.id
+        })
+        massiveGoals.save((err,data)=>{
+            if (err){
+                console.log(err)
+            }
+        })
+    }
+    res.status(200).json(massiveGoals)
+})
+
+
 
 // @desc update goals
 // @route PUT /api/goals/:id
@@ -90,6 +136,8 @@ module.exports={
     getGoals,
     setGoals,
     updateGoals,
-    deleteGoals
+    deleteGoals,
+    createFakeGoals,
+    createMassiveGoals
 
 }
